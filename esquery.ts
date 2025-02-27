@@ -1,10 +1,5 @@
-/* vim: set sw=4 sts=4 : */
 import estraverse from 'estraverse';
-import parser from './parser.js';
-
-/**
-* @typedef {"LEFT_SIDE"|"RIGHT_SIDE"} Side
-*/
+import parser from './parser';
 
 const LEFT_SIDE = 'LEFT_SIDE';
 const RIGHT_SIDE = 'RIGHT_SIDE';
@@ -14,25 +9,14 @@ const RIGHT_SIDE = 'RIGHT_SIDE';
  * @see https://esprima.readthedocs.io/en/latest/syntax-tree-format.html
  */
 
-/**
- * One of the rules of `grammar.pegjs`
- * @typedef {PlainObject} SelectorAST
- * @see grammar.pegjs
-*/
+/** One of the rules of `grammar.pegjs` */
+type SelectorAST = PlainObject;
 
-/**
- * The `sequence` production of `grammar.pegjs`
- * @typedef {PlainObject} SelectorSequenceAST
-*/
+/** The `sequence` production of `grammar.pegjs` */
+type SelectorSequenceAST = PlainObject;
 
-/**
- * Get the value of a property which may be multiple levels down
- * in the object.
- * @param {?PlainObject} obj
- * @param {string[]} keys
- * @returns {undefined|boolean|string|number|external:AST}
- */
-function getPath(obj, keys) {
+/** Get the value of a property which may be multiple levels down in the object. */
+function getPath(obj: PlainObject | null, keys: string[]): undefined | boolean | string | number | AST {
     for (let i = 0; i < keys.length; ++i) {
         if (obj == null) { return obj; }
         obj = obj[keys[i]];
@@ -40,16 +24,8 @@ function getPath(obj, keys) {
     return obj;
 }
 
-/**
- * Determine whether `node` can be reached by following `path`,
- * starting at `ancestor`.
- * @param {?external:AST} node
- * @param {?external:AST} ancestor
- * @param {string[]} path
- * @param {Integer} fromPathIndex
- * @returns {boolean}
- */
-function inPath(node, ancestor, path, fromPathIndex) {
+/** Determine whether `node` can be reached by following `path`, starting at `ancestor` */
+function inPath(node: AST | null, ancestor: AST | null, path: string[], fromPathIndex: number): boolean {
     let current = ancestor;
     for (let i = fromPathIndex; i < path.length; ++i) {
         if (current == null) {
@@ -71,27 +47,19 @@ function inPath(node, ancestor, path, fromPathIndex) {
 
 /**
  * A generated matcher function for a selector.
- * @callback SelectorMatcher
- * @param {?SelectorAST} selector
- * @param {external:AST[]} [ancestry=[]]
- * @param {ESQueryOptions} [options]
- * @returns {void}
+ * @param {AST[]} [ancestry=[]]
 */
+type SelectorMatcher = (selector: SelectorAST | null, ancestry: AST[], option?: ESQueryOptions) => boolean;
 
-/**
- * A WeakMap for holding cached matcher functions for selectors.
- * @type {WeakMap<SelectorAST, SelectorMatcher>}
-*/
-const MATCHER_CACHE = typeof WeakMap === 'function' ? new WeakMap : null;
+/** A WeakMap for holding cached matcher functions for selectors */
+const MATCHER_CACHE = new WeakMap<SelectorAST, SelectorMatcher>();
 
 /**
  * Look up a matcher function for `selector` in the cache.
  * If it does not exist, generate it with `generateMatcher` and add it to the cache.
  * In engines without WeakMap, the caching is skipped and matchers are generated with every call.
- * @param {?SelectorAST} selector
- * @returns {SelectorMatcher}
  */
-function getMatcher(selector) {
+function getMatcher(selector: SelectorAST | null): SelectorMatcher {
     if (selector == null) {
         return () => true;
     }
@@ -109,12 +77,8 @@ function getMatcher(selector) {
     return generateMatcher(selector);
 }
 
-/**
- * Create a matcher function for `selector`,
- * @param {?SelectorAST} selector
- * @returns {SelectorMatcher}
- */
-function generateMatcher(selector) {
+/** Create a matcher function for `selector` */
+function generateMatcher(selector: SelectorAST | null): SelectorMatcher {
     switch(selector.type) {
         case 'wildcard':
             return () => true;
@@ -306,16 +270,16 @@ function generateMatcher(selector) {
         }
 
         case 'class': {
-            
+
             const name = selector.name.toLowerCase();
 
             return (node, ancestry, options) => {
-                
+
                 if (options && options.matchClass) {
                     return options.matchClass(selector.name, node, ancestry);
                 }
-                
-                if (options && options.nodeTypeKey) return false;    
+
+                if (options && options.nodeTypeKey) return false;
 
                 switch(name){
                     case 'statement':
@@ -347,40 +311,22 @@ function generateMatcher(selector) {
     throw new Error(`Unknown selector type: ${selector.type}`);
 }
 
-/**
- * @callback TraverseOptionFallback
- * @param {external:AST} node The given node.
- * @returns {string[]} An array of visitor keys for the given node.
- */
+/** @returns {string[]} An array of visitor keys for the given node. */
+type TraverseOptionFallback = (node: AST) => string[];
+type ClassMatcher = (className: string, node: AST, ancestry: AST[]) => boolean;
+
+interface ESQueryOptions {
+    nodeTypeKey?: string;
+    visitorKeys?: Record<string, string[]>;
+    fallback?: TraverseOptionFallback;
+    matchClass?: ClassMatcher;
+}
 
 /**
- * @callback ClassMatcher
- * @param {string} className The name of the class to match.
- * @param {external:AST} node The node to match against.
- * @param {Array<external:AST>} ancestry The ancestry of the node.
- * @returns {boolean} True if the node matches the class, false if not.
+ * Given a `node` and its ancestors, determine if `node` is matched by `selector`.
+ * @throws {Error} Unknowns (operator, class name, selector type, or selector value type)
  */
-
-/**
- * @typedef {object} ESQueryOptions
- * @property {string} [nodeTypeKey="type"] By passing `nodeTypeKey`, we can allow other ASTs to use ESQuery.
- * @property { { [nodeType: string]: string[] } } [visitorKeys] By passing `visitorKeys` mapping, we can extend the properties of the nodes that traverse the node.
- * @property {TraverseOptionFallback} [fallback] By passing `fallback` option, we can control the properties of traversing nodes when encountering unknown nodes.
- * @property {ClassMatcher} [matchClass] By passing `matchClass` option, we can customize the interpretation of classes.
- */
-
-/**
- * Given a `node` and its ancestors, determine if `node` is matched
- * by `selector`.
- * @param {?external:AST} node
- * @param {?SelectorAST} selector
- * @param {external:AST[]} [ancestry=[]]
- * @param {ESQueryOptions} [options]
- * @throws {Error} Unknowns (operator, class name, selector type, or
- * selector value type)
- * @returns {boolean}
- */
-function matches(node, selector, ancestry, options) {
+function matches(node: AST | null, selector: SelectorAST | null, ancestry: AST[] = [], options?: ESQueryOptions): boolean {
     if (!selector) { return true; }
     if (!node) { return false; }
     if (!ancestry) { ancestry = []; }
@@ -388,13 +334,7 @@ function matches(node, selector, ancestry, options) {
     return getMatcher(selector)(node, ancestry, options);
 }
 
-/**
- * Get visitor keys of a given node.
- * @param {external:AST} node The AST node to get keys.
- * @param {ESQueryOptions|undefined} options
- * @returns {string[]} Visitor keys of the node.
- */
-function getVisitorKeys(node, options) {
+function getVisitorKeys(node: AST, options: ESQueryOptions | undefined): string[] {
     const nodeTypeKey = (options && options.nodeTypeKey) || 'type';
 
     const nodeType = node[nodeTypeKey];
@@ -420,22 +360,15 @@ function getVisitorKeys(node, options) {
  * @param {ESQueryOptions|undefined} options The options to use.
  * @returns {boolean} `true` if the value is an ASTNode.
  */
-function isNode(node, options) {
+function isNode(node: any, options: ESQueryOptions | undefined): boolean {
     const nodeTypeKey = (options && options.nodeTypeKey) || 'type';
     return node !== null && typeof node === 'object' && typeof node[nodeTypeKey] === 'string';
 }
 
-/**
- * Determines if the given node has a sibling that matches the
- * given selector matcher.
- * @param {external:AST} node
- * @param {SelectorMatcher} matcher
- * @param {external:AST[]} ancestry
- * @param {Side} side
- * @param {ESQueryOptions|undefined} options
- * @returns {boolean}
- */
-function sibling(node, matcher, ancestry, side, options) {
+type Side = "LEFT_SIDE" | "RIGHT_SIDE";
+
+/** Determines if the given node has a sibling that matches the given selector matcher. */
+function sibling(node: AST, matcher: SelectorMatcher, ancestry: AST[], side: Side, options?: ESQueryOptions): boolean {
     const [parent] = ancestry;
     if (!parent) { return false; }
     const keys = getVisitorKeys(parent, options);
@@ -462,17 +395,8 @@ function sibling(node, matcher, ancestry, side, options) {
     return false;
 }
 
-/**
- * Determines if the given node has an adjacent sibling that matches
- * the given selector matcher.
- * @param {external:AST} node
- * @param {SelectorMatcher} matcher
- * @param {external:AST[]} ancestry
- * @param {Side} side
- * @param {ESQueryOptions|undefined} options
- * @returns {boolean}
- */
-function adjacent(node, matcher, ancestry, side, options) {
+/** Determines if the given node has an adjacent sibling that matches the given selector matcher */
+function adjacent(node: AST, matcher: SelectorMatcher, ancestry: AST[], side: Side, options: ESQueryOptions | undefined): boolean {
     const [parent] = ancestry;
     if (!parent) { return false; }
     const keys = getVisitorKeys(parent, options);
@@ -493,16 +417,10 @@ function adjacent(node, matcher, ancestry, side, options) {
 }
 
 /**
- * Determines if the given node is the `nth` child.
- * If `nth` is negative then the position is counted
- * from the end of the list of children.
- * @param {external:AST} node
- * @param {external:AST[]} ancestry
- * @param {Integer} nth
- * @param {ESQueryOptions|undefined} options
- * @returns {boolean}
+ * Determines if the given node is the `nth` child. If `nth` is negative then the
+ * position is counted from the end of the list of children.
  */
-function nthChild(node, ancestry, nth, options) {
+function nthChild(node: AST, ancestry: AST[], nth: number, options?: ESQueryOptions): boolean {
     if (nth === 0) { return false; }
     const [parent] = ancestry;
     if (!parent) { return false; }
@@ -519,14 +437,8 @@ function nthChild(node, ancestry, nth, options) {
     return false;
 }
 
-/**
- * For each selector node marked as a subject, find the portion of the
- * selector that the subject must match.
- * @param {SelectorAST} selector
- * @param {SelectorAST} [ancestor] Defaults to `selector`
- * @returns {SelectorAST[]}
- */
-function subjects(selector, ancestor) {
+/** For each selector node marked as a subject, find the portion of the selector that the subject must match */
+function subjects(selector: SelectorAST, ancestor?: SelectorAST): SelectorAST[] {
     if (selector == null || typeof selector != 'object') { return []; }
     if (ancestor == null) { ancestor = selector; }
     const results = selector.subject ? [ancestor] : [];
@@ -539,25 +451,16 @@ function subjects(selector, ancestor) {
     return results;
 }
 
-/**
-* @callback TraverseVisitor
-* @param {?external:AST} node
-* @param {?external:AST} parent
-* @param {external:AST[]} ancestry
-*/
+type TraverseVisitor = (node: AST | null, parent: AST | null, ancestry: AST[]) => unknown;
 
 /**
  * From a JS AST and a selector AST, collect all JS AST nodes that
  * match the selector.
- * @param {external:AST} ast
  * @param {?SelectorAST} selector
- * @param {TraverseVisitor} visitor
- * @param {ESQueryOptions} [options]
- * @returns {external:AST[]}
  */
-function traverse(ast, selector, visitor, options) {
+function traverse(ast: AST, selector: SelectorAST | null, visitor: TraverseVisitor, options?: ESQueryOptions): AST[] {
     if (!selector) { return; }
-    const ancestry = [];
+    const ancestry: AST[] = [];
     const matcher = getMatcher(selector);
     const altSubjects = subjects(selector).map(getMatcher);
     estraverse.traverse(ast, {
@@ -591,36 +494,22 @@ function traverse(ast, selector, visitor, options) {
 /**
  * From a JS AST and a selector AST, collect all JS AST nodes that
  * match the selector.
- * @param {external:AST} ast
- * @param {?SelectorAST} selector
- * @param {ESQueryOptions} [options]
- * @returns {external:AST[]}
  */
-function match(ast, selector, options) {
+function match(ast: AST, selector: SelectorAST | null, options?: ESQueryOptions): AST[] {
     const results = [];
-    traverse(ast, selector, function (node) {
+    traverse(ast, selector, (node) => {
         results.push(node);
     }, options);
     return results;
 }
 
-/**
- * Parse a selector string and return its AST.
- * @param {string} selector
- * @returns {SelectorAST}
- */
-function parse(selector) {
+/** Parse a selector string and return its AST. */
+function parse(selector: string): SelectorAST {
     return parser.parse(selector);
 }
 
-/**
- * Query the code AST using the selector string.
- * @param {external:AST} ast
- * @param {string} selector
- * @param {ESQueryOptions} [options]
- * @returns {external:AST[]}
- */
-function query(ast, selector, options) {
+/** Query the code AST using the selector string. */
+function query(ast: AST, selector: string, options?: ESQueryOptions): AST[] {
     return match(ast, parse(selector), options);
 }
 
