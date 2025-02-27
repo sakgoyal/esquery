@@ -313,13 +313,18 @@ function generateMatcher(selector: SelectorAST | null): SelectorMatcher {
 
 /** @returns {string[]} An array of visitor keys for the given node. */
 type TraverseOptionFallback = (node: AST) => string[];
-type ClassMatcher = (className: string, node: AST, ancestry: AST[]) => boolean;
 
-interface ESQueryOptions {
-    nodeTypeKey?: string;
-    visitorKeys?: Record<string, string[]>;
-    fallback?: TraverseOptionFallback;
-    matchClass?: ClassMatcher;
+type ClassMatcher = (
+    className: string, // className The name of the class to match.
+    node: AST,         // node The node to match against.
+    ancestry: AST[]    // ancestry The ancestry of the node.
+) => boolean;          // True if the node matches the class, false if not.
+
+type ESQueryOptions = {
+    nodeTypeKey?: string;                   // allow other ASTs to use ESQuery.
+    visitorKeys?: Record<string, string[]>; // extend the properties of the nodes that traverse the node.
+    fallback?: TraverseOptionFallback;      // control the properties of traversing nodes when encountering unknown nodes.
+    matchClass?: ClassMatcher;              // customize the interpretation of classes.
 }
 
 /**
