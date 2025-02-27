@@ -1,6 +1,7 @@
-import esquery from '../esquery.js';
-import conditional from './fixtures/conditional.js';
-import simpleProgram from './fixtures/simpleProgram.js';
+import { assert } from 'chai';
+import esquery from '../esquery';
+import conditional from './fixtures/conditional';
+import simpleProgram from './fixtures/simpleProgram';
 
 describe('Complex selector query', function () {
 

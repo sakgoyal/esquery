@@ -1,12 +1,13 @@
-import esquery from '../esquery.js';
-import conditional from './fixtures/conditional.js';
-import forLoop from './fixtures/forLoop.js';
-import simpleFunction from './fixtures/simpleFunction.js';
-import simpleProgram from './fixtures/simpleProgram.js';
+import { assert } from 'chai';
+import esquery from '../esquery';
+import conditional from './fixtures/conditional';
+import forLoop from './fixtures/forLoop';
+import simpleFunction from './fixtures/simpleFunction';
+import simpleProgram from './fixtures/simpleProgram';
 
-import nestedFunctions from './fixtures/nestedFunctions.js';
-import bigArray from './fixtures/bigArray.js';
-import customNodes from './fixtures/customNodes.js';
+import nestedFunctions from './fixtures/nestedFunctions';
+import bigArray from './fixtures/bigArray';
+import customNodes from './fixtures/customNodes';
 
 describe('Query subject', function () {
 

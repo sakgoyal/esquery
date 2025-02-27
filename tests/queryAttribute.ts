@@ -1,9 +1,10 @@
-import esquery from '../esquery.js';
-import literal from './fixtures/literal.js';
-import conditional from './fixtures/conditional.js';
-import forLoop from './fixtures/forLoop.js';
-import simpleFunction from './fixtures/simpleFunction.js';
-import simpleProgram from './fixtures/simpleProgram.js';
+import { assert } from 'chai';
+import esquery from '../esquery';
+import literal from './fixtures/literal';
+import conditional from './fixtures/conditional';
+import forLoop from './fixtures/forLoop';
+import simpleFunction from './fixtures/simpleFunction';
+import simpleProgram from './fixtures/simpleProgram';
 
 describe('Attribute query', function () {
 

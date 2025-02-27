@@ -1,6 +1,7 @@
-import esquery from '../esquery.js';
-import ast from './fixtures/allClasses.js';
-import customNodesWithKind from './fixtures/customNodesWithKind.js';
+import { assert } from 'chai';
+import esquery from '../esquery';
+import ast from './fixtures/allClasses';
+import customNodesWithKind from './fixtures/customNodesWithKind';
 
 describe('Class query', function () {
 
@@ -22,13 +23,13 @@ describe('Class query', function () {
         assert.includeMembers(matches, [
             ast.body[0].id,
             ast.body[0].body.body[0].expression,
-            ast.body[0].body.body[0].expression.left.elements[0],
+            ast.body[0].body.body[0].expression.left!.elements[0],
             ast.body[0].body.body[0].expression.right,
-            ast.body[0].body.body[0].expression.right.body,
+            ast.body[0].body.body[0].expression.right!.body,
             ast.body[0].body.body[1].expression,
             ast.body[0].body.body[2].expression,
             ast.body[0].body.body[3].expression,
-            ast.body[0].body.body[3].expression.expressions[0]
+            ast.body[0].body.body[3].expression.expressions![0]
         ]);
         assert.equal(9, matches.length);
     });
@@ -56,13 +57,13 @@ describe('Class query', function () {
             ast.body[0].id,
             ast.body[0].body.body[0].expression,
             ast.body[0].body.body[0].expression.left,
-            ast.body[0].body.body[0].expression.left.elements[0],
+            ast.body[0].body.body[0].expression.left!.elements[0],
             ast.body[0].body.body[0].expression.right,
-            ast.body[0].body.body[0].expression.right.body,
+            ast.body[0].body.body[0].expression.right!.body,
             ast.body[0].body.body[1].expression,
             ast.body[0].body.body[2].expression,
             ast.body[0].body.body[3].expression,
-            ast.body[0].body.body[3].expression.expressions[0]
+            ast.body[0].body.body[3].expression.expressions![0]
         ]);
         assert.equal(10, matches.length);
     });
@@ -86,13 +87,13 @@ describe('Class query', function () {
         assert.includeMembers(matches, [
             ast.body[0].id,
             ast.body[0].body.body[0].expression,
-            ast.body[0].body.body[0].expression.left.elements[0],
+            ast.body[0].body.body[0].expression.left!.elements[0],
             ast.body[0].body.body[0].expression.right,
-            ast.body[0].body.body[0].expression.right.body,
+            ast.body[0].body.body[0].expression.right!.body,
             ast.body[0].body.body[1].expression,
             ast.body[0].body.body[2].expression,
             ast.body[0].body.body[3].expression,
-            ast.body[0].body.body[3].expression.expressions[0]
+            ast.body[0].body.body[3].expression.expressions![0]
         ]);
         assert.equal(9, matches.length);
     });
@@ -126,7 +127,7 @@ describe('Class query', function () {
                 CustomExpression: []
             },
             nodeTypeKey: 'kind',
-            matchClass(className, node) {
+            matchClass(className: string, node) {
                 return className === 'root' && node.kind === 'CustomRoot';
             }
         };

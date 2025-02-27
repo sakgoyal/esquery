@@ -1,6 +1,7 @@
-import esquery from '../esquery.js';
-import forLoop from './fixtures/forLoop.js';
-import ast from './fixtures/allClasses.js';
+import { assert } from 'chai';
+import esquery from '../esquery';
+import forLoop from './fixtures/forLoop';
+import ast from './fixtures/allClasses';
 
 describe('match', function () {
 

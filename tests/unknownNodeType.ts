@@ -1,5 +1,6 @@
-import esquery from '../esquery.js';
-import AST from './fixtures/unknownNodeTypeAST.js';
+import { assert } from 'chai';
+import esquery from '../esquery';
+import AST from './fixtures/unknownNodeTypeAST';
 
 describe('Unknown node type', function () {
     it('does not throw', function () {

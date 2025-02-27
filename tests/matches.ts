@@ -1,9 +1,11 @@
-import esquery from '../esquery.js';
-import forLoop from './fixtures/forLoop.js';
-import simpleProgram from './fixtures/simpleProgram.js';
-import conditional from './fixtures/conditional.js';
-import customNodes from './fixtures/customNodes.js';
-import customNodesWithKind from './fixtures/customNodesWithKind.js';
+
+import { assert } from 'chai';
+import esquery from '../esquery';
+import forLoop from './fixtures/forLoop';
+import simpleProgram from './fixtures/simpleProgram';
+import conditional from './fixtures/conditional';
+import customNodes from './fixtures/customNodes';
+import customNodesWithKind from './fixtures/customNodesWithKind';
 
 describe('matches', function () {
     it('falsey node', function () {

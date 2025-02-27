@@ -1,3 +1,4 @@
+import { assert } from 'chai';
 import esquery from "../esquery.js";
 
 describe("basic query parsing", function () {

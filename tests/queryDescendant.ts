@@ -1,5 +1,6 @@
-import esquery from '../esquery.js';
-import conditional from './fixtures/conditional.js';
+import { assert } from 'chai';
+import esquery from '../esquery';
+import conditional from './fixtures/conditional';
 
 describe('Pseudo matches query', function () {
 

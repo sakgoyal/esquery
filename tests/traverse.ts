@@ -1,11 +1,12 @@
-import esquery from '../esquery.js';
-import conditional from './fixtures/conditional.js';
+import { assert } from 'chai';
+import esquery from '../esquery';
+import conditional from './fixtures/conditional';
 
 describe('traverse', function () {
     it('iterates matches', function () {
-        const matches = [];
-        const parents = [];
-        const ancestries = [];
+        const matches: unknown[] = [];
+        const parents: unknown[] = [];
+        const ancestries: unknown[] = [];
         const selector = esquery.parse(':matches(IfStatement)');
         esquery.traverse(conditional, selector, (match, parent, ancestry) => {
             parents.push(parent);

@@ -2,7 +2,7 @@
   "name": "esquery",
   "version": "1.6.0",
   "author": "Joel Feenstra <jrfeenst+esquery@gmail.com>",
-  "contributors": [],
+  "contributors": ["Saksham Goyal <sakgoy2001@gmail.com>"],
   "description": "A query library for ECMAScript AST using a CSS selector like query language.",
   "main": "dist/esquery.js",
   "type": "module",
@@ -14,13 +14,11 @@
     "README.md"
   ],
   "scripts": {
-    "prepublishOnly": "npm run build && npm test",
-    "build:parser": "peggy  -o \"parser.js\" --format es \"grammar.pegjs\" --dts",
-    "build:browser": "tsc",
-    "build": "npm run build:parser && npm run build:browser",
-    "mocha": "mocha --require chai/register-assert tests",
-    "test": "nyc npm run mocha && npm run lint",
-    "test:ci": "npm run mocha"
+    "prepublishOnly": "npm run build && npm test:ci",
+    "build:parser": "peggy --dts --format es -o parser.js grammar.pegjs",
+    "build": "npm run build:parser && tsc",
+    "test": "mocha tests",
+    "test:ci": "npm run mocha && npm run lint"
   },
   "repository": {
     "type": "git",
@@ -35,14 +33,17 @@
     "query"
   ],
   "devDependencies": {
-    "@types/esprima": "^4.0.6",
-    "@types/estraverse": "^5.1.7",
-    "@types/estree": "^1.0.6",
+    "@types/chai": "latest",
+    "@types/esprima": "latest",
+    "@types/estraverse": "latest",
+    "@types/estree": "latest",
+    "@types/mocha": "latest",
+    "@types/node": "latest",
     "chai": "^5.2.0",
     "esprima": "latest",
     "mocha": "^11",
     "peggy": "^4.2.0",
-    "typescript": "^5.7.3"
+    "typescript": "latest"
   },
   "license": "BSD-3-Clause",
   "dependencies": {
